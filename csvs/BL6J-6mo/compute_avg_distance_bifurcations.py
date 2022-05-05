@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(description='Filter microvessels')
 parser.add_argument('-e','--edge_list', help='Edge List to be processed.', required=True)
 parser.add_argument('-n','--node_list', help='Node List to be processed.', required=True)
 parser.add_argument('-d','--display_fit',help='Whether to display the fit or not.',action='store_true')
-parser.add_argument('-r','--radius', help='Threshold radius for microvessels', required=False, default=5.0,type=float)
+parser.add_argument('-r','--radius', help='Threshold radius for microvessels', required=False, default=5.0)
 args = parser.parse_args()
 
 # read unfiltered edge list
@@ -42,9 +42,9 @@ for node in node_list:
     edges = df_edges[(df_edges['node1id'] == node) | (df_edges['node2id'] == node) ]
     num_of_bifurcations.append(len(edges.index))
     mean_to_bif.append( edges["distance"].mean())
+    df_nodes.at[node,"mean_to_bifs"] =  edges["distance"].mean()
 
 df_nodes["avg_distance_to_bifurcations"] = mean_to_bif
-df_nodes["num_bifurications_to_microvessels"] = num_of_bifurcations
 
 # save new csvs
 df_edges.to_csv(edge_path,index=False,sep=';')

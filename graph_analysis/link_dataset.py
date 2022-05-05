@@ -124,25 +124,18 @@ class LinkVesselGraph(InMemoryDataset):
 
         ## aging graphs
         'Aging_Study_BL6J-6mo_1': {'folder':'Aging_Study_BL6J-6mo_1.zip',
-                      'url':'',
+                      'url':'https://syncandshare.lrz.de/dl/fiT5JndEn1JiAun93JKEy7AV/Aging_Study_BL6J-6mo_1.zip',
                       'AlanBrainAtlas':False,'extraction_method':'voreen'},
-        'Aging_Study_BL6J-6mo_2': {'folder':'Aging_Study_BL6J-6mo_1.zip',
-                      'url':'',
-                      'AlanBrainAtlas':False,'extraction_method':'voreen'},
-        'Aging_Study_BL6J-6mo_3': {'folder':'Aging_Study_BL6J-6mo_1.zip',
-                      'url':'',
+        'Aging_Study_BL6J-6mo_2': {'folder':'Aging_Study_BL6J-6mo_2.zip',
+                      'url':'https://syncandshare.lrz.de/dl/fi4yeDj6jfmBsJKP2DQB1UKW/Aging_Study_BL6J-6mo_2.zip',
                       'AlanBrainAtlas':False,'extraction_method':'voreen'},
 
-        'Aging_Study_BL6J-24mo_1': {'folder':'Aging_Study_BL6J-6mo_1.zip',
+        'Aging_Study_BL6J-24mo_1': {'folder':'Aging_Study_BL6J-24mo_1.zip',
                       'url':'',
                       'AlanBrainAtlas':False,'extraction_method':'voreen'},
-        'Aging_Study_BL6J-24mo_2': {'folder':'Aging_Study_BL6J-6mo_1.zip',
+        'Aging_Study_BL6J-24mo_2': {'folder':'Aging_Study_BL6J-24mo_2.zip',
                       'url':'',
                       'AlanBrainAtlas':False,'extraction_method':'voreen'},
-        'Aging_Study_BL6J-24mo_3': {'folder':'Aging_Study_BL6J-6mo_1.zip',
-                      'url':'',
-                      'AlanBrainAtlas':False,'extraction_method':'voreen'},
-
     }
  
     def __init__(self,
