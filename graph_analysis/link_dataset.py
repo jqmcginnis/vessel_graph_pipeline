@@ -136,6 +136,29 @@ class LinkVesselGraph(InMemoryDataset):
         'Aging_Study_BL6J-24mo_2': {'folder':'Aging_Study_BL6J-24mo_2.zip',
                       'url':'',
                       'AlanBrainAtlas':False,'extraction_method':'voreen'},
+
+
+
+
+        ## patches for aging study
+
+        '0305-1899-2645_mask': {'folder':'0305-1899-2645_mask.zip',
+                      'url':'https://syncandshare.lrz.de/dl/fiGb6cZSgedEad4aKZktP5py/0305-1899-2645_mask.zip',
+                      'AlanBrainAtlas':False,'extraction_method':'voreen'},
+
+        'BL6-3mo-5_iso3um_probs_bin0p48_ROI1': {'folder':'BL6-3mo-5_iso3um_probs_bin0p48_ROI1.zip',
+                      'url':'https://syncandshare.lrz.de/dl/fi35HRKMaEd7MpZFxZVnq1r9/BL6-3mo-5_iso3um_probs_bin0p48_ROI1.zip',
+                      'AlanBrainAtlas':False,'extraction_method':'voreen'},
+
+        'CD1-41-iso3um_probs_bin0p48_0972-1831-0527_ROI2': {'folder':'CD1-41-iso3um_probs_bin0p48_0972-1831-0527_ROI2.zip',
+                      'url':'https://syncandshare.lrz.de/dl/fi8DR6KgGMQLj85YyXXvE5U2/CD1-41-iso3um_probs_bin0p48_0972-1831-0527_ROI2.zip',
+                      'AlanBrainAtlas':False,'extraction_method':'voreen'},
+
+        'CD1-41-iso3um_probs_bin0p48_ROI1': {'folder':'CD1-41-iso3um_probs_bin0p48_ROI1.zip',
+                      'url':'https://syncandshare.lrz.de/dl/fiCYNsFXZ3kafpoxVASymRkT/CD1-41-iso3um_probs_bin0p48_ROI1.zip',
+                      'AlanBrainAtlas':False,'extraction_method':'voreen'},
+
+
     }
  
     def __init__(self,
@@ -148,6 +171,7 @@ class LinkVesselGraph(InMemoryDataset):
                 use_edge_attr: bool = True,
                 use_atlas: bool = False,
                 seed = 123,
+                min_vessel_length = 0.0,
                 transform=None,
                 pre_transform=None,
                 ):
@@ -163,6 +187,7 @@ class LinkVesselGraph(InMemoryDataset):
         self.val_ratio = val_ratio
         self.test_ratio = test_ratio
         self.seed = seed
+        self.min_vessel_length = min_vessel_length
         self.use_edge_attr = use_edge_attr
         self.use_atlas = use_atlas
         self.splitting_strategy = splitting_strategy
@@ -268,6 +293,13 @@ class LinkVesselGraph(InMemoryDataset):
                 data.edge_attr_keys = []
                 print("No edge attributes.")
             edge_features = np.array(df_edges[data.edge_attr_keys].to_numpy())
+
+            # filter minimum edge length
+            idx_length = data.edge_attr_keys.index("length")
+            indices = np.squeeze(np.argwhere(edge_features[:,idx_length]>=self.min_vessel_length))
+
+            edge_features = edge_features[indices]
+            edges = edges[indices]
 
             data.edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
             data.edge_attr = torch.from_numpy(np.array(edge_features))

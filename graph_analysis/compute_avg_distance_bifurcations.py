@@ -15,10 +15,10 @@ df_edges = pd.read_csv(args.edge_list,sep=';')
 df_edges = df_edges.sort_values(by="avgRadiusAvg",ascending=True)
 
 # filter all edges below 15um
-df_edges = df_edges.loc[df_edges['avgRadiusAvg'] < args.radius]
+# df_edges = df_edges.loc[df_edges['avgRadiusAvg'] < args.radius]
 
-edge_path = args.edge_list.split('.csv')[0] + "_microvessels.csv"
-node_path = args.node_list.split('.csv')[0] + "_microvessels.csv"
+edge_path = args.edge_list.split('.csv')[0] + "_avg_distance.csv"
+node_path = args.node_list.split('.csv')[0] + "_avg_distance_microvessels.csv"
 
 # obtain list of all nodes included in the microvessel graph
 node_ids = np.array((np.array(df_edges[['node1id']]),np.array(df_edges[['node2id']]))).flatten()
@@ -44,8 +44,8 @@ for node in node_list:
     mean_to_bif.append( edges["distance"].mean())
 
 df_nodes["avg_distance_to_bifurcations"] = mean_to_bif
-df_nodes["num_bifurications_to_microvessels"] = num_of_bifurcations
+df_nodes["num_bifurcations_to_microvessels"] = num_of_bifurcations
 
 # save new csvs
-df_edges.to_csv(edge_path,index=False,sep=';')
+# df_edges.to_csv(edge_path,index=False,sep=';')
 df_nodes.to_csv(node_path,index=False,sep=';')

@@ -27,7 +27,8 @@ from link_dataset import LinkVesselGraph
 
 def main():
 
-    dataset = LinkVesselGraph(root='data', name=selected_dataset, splitting_strategy=args.splitting_strategy, use_edge_attr=True, use_atlas=True)
+    dataset = LinkVesselGraph(root='data', name=selected_dataset, splitting_strategy=args.splitting_strategy, min_vessel_length=5.0,
+                              use_edge_attr=True, use_atlas=True)
 
     print(f'Dataset: {dataset}:')
     print('======================')
@@ -62,19 +63,60 @@ def main():
 
     print('==============================================================')
 
-    ## convert to networkx graph to do some graph analysis
 
     complete_graph = Data(x = data.x, edge_index=data.edge_index_undirected, edge_attr=data.edge_attr_undirected)
+
     print(complete_graph)
 
     graph = to_networkx(data=complete_graph,to_undirected=True, remove_self_loops=False)#, node_attrs = data.x,edge_attrs=data.edge_attr_undirected,to_undirected=True, remove_self_loops=False)
-    print(graph)
+    #print(graph)
     ## compute closed loops for undirected graphs
     cycles = nx.cycle_basis(graph)
-    #print(cycles)
-    #print("Nuber of closed loop",len(cycles))
+    numbers = range(len(cycles))
+    nodes = data.pos.cpu().detach().numpy()
 
-    d = {'num_closed_loops': [len(cycles)]}
+    # restrict cycles to <=10
+    valid_indices = []
+
+    # toss out the ones we don't want
+    for cycle_idx, cycle in enumerate(cycles):
+        if len(cycle) <= 10:
+            valid_indices.append(cycle)
+
+
+    cycles = valid_indices
+
+    # declare bounding_box_array
+    bounding_boxes = np.zeros((len(cycles),6))
+    loop_number = []
+    edge_count = []
+
+    for cycle_idx, cycle in enumerate(cycles):
+        if len(cycle) <= 10:
+            loop_number.append(cycle_idx)
+            edge_count.append(len(cycle))
+            # assemble the node list
+            # x, y, z
+            local_bounding_box = np.zeros((len(cycle),3),dtype=float)
+            for idx,x in enumerate(cycle):
+                local_bounding_box[idx,:] = nodes[int(x),:]
+
+                bounding_boxes[cycle_idx, 0] = np.min(local_bounding_box[:,0])
+                bounding_boxes[cycle_idx, 1] = np.max(local_bounding_box[:, 0])
+                bounding_boxes[cycle_idx, 2] = np.min(local_bounding_box[:, 1])
+                bounding_boxes[cycle_idx, 3] = np.max(local_bounding_box[:, 1])
+                bounding_boxes[cycle_idx, 4] = np.min(local_bounding_box[:, 2])
+                bounding_boxes[cycle_idx, 5] = np.max(local_bounding_box[:, 2])
+
+    d = {'loop_nr':loop_number,
+         'edge_count': edge_count,
+         'xmin':bounding_boxes[:,0],
+         'xmax': bounding_boxes[:, 1],
+         'ymin': bounding_boxes[:, 2],
+         'ymax': bounding_boxes[:, 3],
+         'zmin': bounding_boxes[:, 4],
+         'zmax': bounding_boxes[:, 5],
+         'cycle elements':cycles}
     df = pd.DataFrame(data=d)
     identifier = f"{dataset.name}_num_closed_loops.csv"
     df.to_csv(identifier) 
