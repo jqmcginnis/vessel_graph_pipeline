@@ -17,7 +17,6 @@ from torch_sparse import coalesce
 
 parser = argparse.ArgumentParser(description='display graph features and summary.')
 parser.add_argument('-ds','--dataset',help='Specify the dataset you want to select', required=True)
-parser.add_argument('-s','--splitting_strategy',help='Specify the dataset you want to select', required=True)
 parser.add_argument('-l','--min_vessel_length', type=float, default=5.0, help='Minimum vessel length')
 parser.add_argument('-min', '--min_cycle_length',type=int, help='Specify the minimum required number of nodes.', default=3)
 parser.add_argument('-max', '--max_cycle_length', type=int, help='Specify the minimum required number of nodes.', default=15)
@@ -30,7 +29,10 @@ from link_dataset import LinkVesselGraph
 
 def main():
 
-    dataset = LinkVesselGraph(root='data', name=selected_dataset, splitting_strategy=args.splitting_strategy,
+    # Note - we can use the random split for the computation of the closed loops
+    # we are using the whole graph (undirected edges) any way, no reason to compute
+    # spatial masks!
+    dataset = LinkVesselGraph(root='data', name=selected_dataset, splitting_strategy='random',
                               min_vessel_length=args.min_vessel_length,
                               use_edge_attr=True, use_atlas=True)
 
@@ -56,7 +58,6 @@ def main():
 
     print(data.edge_index_undirected)
     print(data.edge_index)
-
 
     complete_graph = Data(x = data.x, edge_index=data.edge_index_undirected, edge_attr=data.edge_attr_undirected)
 
