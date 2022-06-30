@@ -18,6 +18,9 @@ from torch_sparse import coalesce
 parser = argparse.ArgumentParser(description='display graph features and summary.')
 parser.add_argument('-ds','--dataset',help='Specify the dataset you want to select', required=True)
 parser.add_argument('-s','--splitting_strategy',help='Specify the dataset you want to select', required=True)
+parser.add_argument('-l','--min_vessel_length', type=float, default=5.0, help='Minimum vessel length')
+parser.add_argument('-min', '--min_cycle_length',type=int, help='Specify the minimum required number of nodes.', default=3)
+parser.add_argument('-max', '--max_cycle_length', type=int, help='Specify the minimum required number of nodes.', default=15)
 
 args = parser.parse_args()
 selected_dataset = args.dataset
@@ -27,7 +30,8 @@ from link_dataset import LinkVesselGraph
 
 def main():
 
-    dataset = LinkVesselGraph(root='data', name=selected_dataset, splitting_strategy=args.splitting_strategy, min_vessel_length=5.0,
+    dataset = LinkVesselGraph(root='data', name=selected_dataset, splitting_strategy=args.splitting_strategy,
+                              min_vessel_length=args.min_vessel_length,
                               use_edge_attr=True, use_atlas=True)
 
     print(f'Dataset: {dataset}:')
@@ -53,26 +57,24 @@ def main():
     print(data.edge_index_undirected)
     print(data.edge_index)
 
-    print(data.train_pos_edge_index.shape)
-    print(data.test_pos_edge_index.shape)
-    print(data.val_pos_edge_index.shape)
-
-    print(data.train_neg_edge_index.shape)
-    print(data.test_neg_edge_index.shape)
-    print(data.val_neg_edge_index.shape)
-
-    print('==============================================================')
-
 
     complete_graph = Data(x = data.x, edge_index=data.edge_index_undirected, edge_attr=data.edge_attr_undirected)
 
-    print(complete_graph)
+    #x = data.pos.cpu()
+    #edge_attr_undirected = data.edge_attr_undirected
 
-    graph = to_networkx(data=complete_graph,to_undirected=True, remove_self_loops=False)#, node_attrs = data.x,edge_attrs=data.edge_attr_undirected,to_undirected=True, remove_self_loops=False)
-    #print(graph)
+    # convert to networkx for computations
+    graph = to_networkx(data=complete_graph,
+                        node_attrs=["x"],
+                        edge_attrs=["edge_attr"],
+                        to_undirected=True,
+                        remove_self_loops=False)#, node_attrs = data.x,edge_attrs=data.edge_attr_undirected,to_undirected=True, remove_self_loops=False)
+
+    #print(graph.nodes(data=True))
+    #print(graph.edges(data=True))
+
     ## compute closed loops for undirected graphs
     cycles = nx.cycle_basis(graph)
-    numbers = range(len(cycles))
     nodes = data.pos.cpu().detach().numpy()
 
     # restrict cycles to <=10
@@ -80,9 +82,8 @@ def main():
 
     # toss out the ones we don't want
     for cycle_idx, cycle in enumerate(cycles):
-        if len(cycle) <= 10:
+        if ((len(cycle) >= args.min_cycle_length) and (len(cycle) <= args.max_cycle_length)):
             valid_indices.append(cycle)
-
 
     cycles = valid_indices
 
@@ -92,7 +93,7 @@ def main():
     edge_count = []
 
     for cycle_idx, cycle in enumerate(cycles):
-        if len(cycle) <= 10:
+        if len(cycle) <= args.max_cycle_length:
             loop_number.append(cycle_idx)
             edge_count.append(len(cycle))
             # assemble the node list
@@ -108,6 +109,28 @@ def main():
                 bounding_boxes[cycle_idx, 4] = np.min(local_bounding_box[:, 2])
                 bounding_boxes[cycle_idx, 5] = np.max(local_bounding_box[:, 2])
 
+    cycle_length = []
+    vessel_length = []
+    vessel_distance = []
+
+    index_len = data.edge_attr_keys.index("length")
+    index_dist = data.edge_attr_keys.index("distance")
+
+    for cycle in cycles:
+        i = 0
+        vl = 0
+        dist = 0
+        while i < len(cycle)-1:
+            # hop from edge to edge
+            vl += graph.get_edge_data(cycle[i],cycle[i+1])['edge_attr'][index_len]
+            dist += graph.get_edge_data(cycle[i],cycle[i+1])['edge_attr'][index_dist]
+            i = i+1
+        # finish computation by closing the loop again [distance and length from first to last element]
+        vl += graph.get_edge_data(cycle[-1], cycle[0])['edge_attr'][index_len]
+        dist += graph.get_edge_data(cycle[-1], cycle[0])['edge_attr'][index_dist]
+        vessel_length.append(vl)
+        vessel_distance.append(dist)
+
     d = {'loop_nr':loop_number,
          'edge_count': edge_count,
          'xmin':bounding_boxes[:,0],
@@ -116,9 +139,12 @@ def main():
          'ymax': bounding_boxes[:, 3],
          'zmin': bounding_boxes[:, 4],
          'zmax': bounding_boxes[:, 5],
-         'cycle elements':cycles}
+         'vessel_length': vessel_length,
+         'vessel_dist': vessel_distance,
+         'cycle_elements': cycles,
+         }
     df = pd.DataFrame(data=d)
-    identifier = f"{dataset.name}_num_closed_loops.csv"
+    identifier = f"{dataset.name}_num_closed_loops_edge_len.csv"
     df.to_csv(identifier) 
 
 
