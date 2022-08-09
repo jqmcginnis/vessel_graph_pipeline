@@ -9,11 +9,9 @@ import os
 import networkx as nx
 import torch_geometric.transforms as T
 from torch_geometric.utils import to_networkx
-from torch_geometric.data import (Data, InMemoryDataset, download_url,
-                                  extract_gz, extract_tar, extract_zip)
-from torch_geometric.data.makedirs import makedirs
-from torch_geometric.utils import to_undirected, remove_isolated_nodes, remove_self_loops
-from torch_sparse import coalesce
+from torch_geometric.data import Data
+
+from torch_geometric.utils import remove_isolated_nodes, remove_self_loops
 
 parser = argparse.ArgumentParser(description='display graph features and summary.')
 parser.add_argument('-n','--node_list',help='Path to node list.', required=True)
@@ -173,7 +171,6 @@ def main():
     df = pd.DataFrame(data=d)
     identifier = f"{dataset_name}num_closed_loops_edge_len.csv"
     df.to_csv(identifier) 
-
 
 if __name__ == "__main__":
         main()
