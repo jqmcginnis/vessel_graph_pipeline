@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser(description='Control script for running the com
 # general settings and input files
 parser.add_argument('-s','--segmentation_mask', help='Path of zipped segmentation mask of the whole brain.', type=str, default = 'segmentation.nii.gz', required=True)
 parser.add_argument('-b','--bulge_size', help='Specify bulge size', type=float, default=3.0)
+parser.add_argument('-r','--remove_zips', action='store_true', help="whether to remove zips after computation.")
 
 # voreen command line tool options
 parser.add_argument('-vp','--voreen_tool_path',help="Specify the path where voreentool is located.", required=True)
@@ -42,40 +43,36 @@ parser.add_argument('-max', '--max_cycle_length', type=int, help='Specify the mi
 args = parser.parse_args()
 
 # check if we are dealing with nii.gz or .nii
-
-delete_smask_flag = False
-delete_amask_flag = False
-
 smask_path = os.path.abspath(args.segmentation_mask)
 amask_path = os.path.abspath(args.atlas_mask)
 
 if os.path.exists(smask_path):
-
     if smask_path.endswith('nii.gz'):
-        gunzip(args.segmentation_mask)
-        delete_smask_flag = True
-        smask_path = os.path.splitext(args.segmentation_mask)[0]
+        if os.path.exists(os.path.splitext(smask_path)[0]):
+            print("unzipped version already exists")
+        else:
+            gunzip(smask_path)
+        smask_path = os.path.splitext(smask_path)[0]
     elif smask_path.endswith('.nii'):
         print("unzipped version already exists")
-        delete_smask_flag = False
-
     else:
         sys.exit(f'Segmentation Mask not supported.')
 else:
         sys.exit(f'Segmentation Mask not found.')
 
-
-if os.path.exists(args.atlas_mask):
+if os.path.exists(amask_path):
     if amask_path.endswith('nii.gz'):
-        gunzip(args.atlas_mask)
-        delete_smask_flag = True
-        amask_path = os.path.splitext(args.segmentation_mask)[0]
+        if os.path.exists(os.path.splitext(amask_path)[0]):
+            print("unzipped version already exists")
+        else:
+            gunzip(amask_path)
+        amask_path = os.path.splitext(amask_path)[0]
     elif amask_path.endswith('.nii'):
         print("unzipped version already exists")
-        delete_smask_flag = False
-
     else:
-        print("no atlas provided.")
+        sys.exit(f'Atlas Mask not supported.')
+else:
+        print("No atlas mask provided.")
 
 bulge_size = args.bulge_size
 voreen_tool_path = os.path.abspath(args.voreen_tool_path)
@@ -92,10 +89,6 @@ bulge_size_identifier = f'{bulge_size}'
 bulge_size_identifier = bulge_size_identifier.replace('.','_')
 edge_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_edges.csv'
 node_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_nodes.csv'
-
-# currently not supported
-# graph_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_graph.vvg.gz'
-# print(f'Graph Path: {graph_path}')
 
 print(f'Segmentation Mask: {smask_path}')
 print(f'Edge List Path: {edge_path}')
@@ -190,11 +183,9 @@ else:
     analyze_loops(node_path, edge_path, args.min_vessel_length,args.min_cycle_length, args.max_cycle_length, identifier)
 
 # removing unzipped versions (if intended)
-if delete_smask_flag:
+if args.remove_zips:
     if os.path.isfile(smask_path):
         os.remove(smask_path)
-
-if delete_amask_flag:
     if os.path.isfile(amask_path):
         os.remove(amask_path)
 
