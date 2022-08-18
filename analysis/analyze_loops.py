@@ -1,15 +1,14 @@
-import os
 import os.path as osp
 import torch
 import numpy as np
 import pandas as pd
-import argparse
 import os
 import networkx as nx
 import torch_geometric.transforms as T
 from torch_geometric.utils import to_networkx
 from torch_geometric.data import Data
 from torch_geometric.utils import remove_isolated_nodes, remove_self_loops
+from tqdm import tqdm
 
 def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max_cycle_length, file_path):
 
@@ -83,7 +82,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
     valid_indices = []
 
     # toss out the ones we don't want
-    for cycle_idx, cycle in enumerate(cycles):
+    for cycle_idx, cycle in enumerate(tqdm(cycles)):
         if ((len(cycle) >= min_cycle_length) and (len(cycle) <= max_cycle_length)):
             valid_indices.append(cycle)
 
@@ -94,7 +93,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
     loop_number = []
     edge_count = []
 
-    for cycle_idx, cycle in enumerate(cycles):
+    for cycle_idx, cycle in enumerate(tqdm(cycles)):
         if len(cycle) <= max_cycle_length:
             loop_number.append(cycle_idx)
             edge_count.append(len(cycle))
@@ -117,7 +116,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
     index_len = data.edge_attr_keys.index("length")
     index_dist = data.edge_attr_keys.index("distance")
 
-    for cycle in cycles:
+    for cycle in tqdm(cycles):
         i = 0
         vl = 0
         dist = 0
