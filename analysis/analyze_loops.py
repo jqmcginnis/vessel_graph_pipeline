@@ -149,6 +149,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
     df = pd.DataFrame(data=d)
     identifier = f"{dataset_name}_stats_vmin_{min_vessel_length}_cmin_{min_cycle_length}_cmax_{max_cycle_length}.csv"
     identifier  = identifier.replace('__', '_') 
+    identifier  = identifier.replace('.', '_') 
     df.to_csv(identifier) 
 
 
