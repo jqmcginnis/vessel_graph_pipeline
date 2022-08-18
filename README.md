@@ -4,7 +4,7 @@ This prepository hosts source code for an automated voreen-based pipeline coveri
 
 ## Workflow 
 
-Install voreen to your local linux machine, following the [installation instructions]: https://github.com/jqmcginnis/vessel_graph_pipeline/tree/main/installation
+Install voreen to your local linux machine, following the [installation instructions](https://github.com/jqmcginnis/vessel_graph_pipeline/tree/main/installation).
 
 Required input files:
 
