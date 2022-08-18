@@ -2,24 +2,26 @@ import argparse
 import os
 import datetime
 import pathlib
+from pathlib import Path
 from shutil import copyfile
 import gzip
 import shutil
 
 def gunzip(file):
+    print(f'Unzipping {file} to {os.path.splitext(file)[0]}')
     with gzip.open(file, 'rb') as f_in:
         with open(os.path.splitext(file)[0], 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
 
 # import custom modules
-from post_processing import post_processing
-# from analysis import 
+from post_processing.post_processing import post_processing
+# from analysis import
 
 parser = argparse.ArgumentParser(description='Control script for running the complete vessel pipeline.')
 
 # general settings and input files
-parser.add_argument('-s','--segmentation_mask', help='Path of zipped segmentation mask of the whole brain.', required=True)
-parser.add_argument('-a','--atlas_mask', help='Path of zipped atlas mask of the whole brain.', default="", type=str)
+parser.add_argument('-s','--segmentation_mask', help='Path of zipped segmentation mask of the whole brain.', type=str, default = 'segmentation.nii.gz', required=True)
+parser.add_argument('-a','--atlas_mask', help='Path of zipped atlas mask of the whole brain.', type=str, default= 'atlas.nii.gz')
 parser.add_argument('-b','--bulge_size', help='Specify bulge size', type=float, required=True)
 
 # voreen command line tool options
@@ -32,21 +34,29 @@ args = parser.parse_args()
 
 # unzip files using gzip
 
-if not args.segmentation_mask:
+smask_path = args.segmentation_mask
+amask_path = args.atlas_mask
+
+if os.path.exists(args.segmentation_mask):
     gunzip(args.segmentation_mask)
-    
-if not args.atlas_mask:
+    smask_path = os.path.abspath(os.path.splitext(args.segmentation_mask)[0])
+    print(smask_path)
+
+if os.path.exists(args.atlas_mask):
     gunzip(args.atlas_mask)
+    amask_path = os.path.abspath(os.path.splitext(args.atlas_mask)[0])
 
 
-smask_path = args.segmentation_mask.replace('.','_')
-amask_path = args.atlas_mask.replace('.','_')
 bulge_size = args.bulge_size
-
 voreen_tool_path = args.voreen_tool_path
+
 workdir = args.workdir
 tempdir = args.tempdir
 cachedir = args.cachedir
+
+Path(workdir).mkdir(parents=True, exist_ok=True)
+Path(tempdir).mkdir(parents=True, exist_ok=True)
+Path(cachedir).mkdir(parents=True, exist_ok=True)
 
 bulge_size_identifier = f'{bulge_size}'
 bulge_size_identifier = bulge_size_identifier.replace('.','_')
@@ -98,4 +108,11 @@ os.system(f'cd {voreen_tool_path} ; ./voreentool \
 
 # post-processing module
 post_processing(node_path, edge_path)
+
+if os.path.isfile(amask_path):
+  os.remove(amask_path)
+
+if os.path.isfile(smask_path):
+  os.remove(smask_path)
+
 
