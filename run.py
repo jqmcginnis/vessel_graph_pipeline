@@ -15,7 +15,8 @@ def gunzip(file):
 
 # import custom modules
 from post_processing.post_processing import post_processing
-# from analysis import
+from analysis.analyze_loops import analyze_loops
+
 
 parser = argparse.ArgumentParser(description='Control script for running the complete vessel pipeline.')
 
@@ -29,6 +30,11 @@ parser.add_argument('-vp','--voreen_tool_path',help="Specify the path where vore
 parser.add_argument('-wd','--workdir', help='Specify the working directory.', required=True)
 parser.add_argument('-td','--tempdir', help='Specify the temporary data directory.', required=True)
 parser.add_argument('-cd','--cachedir',help='Specify the cache directory.', required=True)
+
+# statistics
+parser.add_argument('-l','--min_vessel_length', type=float, default=5.0, help='Minimum vessel length')
+parser.add_argument('-min', '--min_cycle_length',type=int, help='Specify the minimum required number of nodes.', default=3)
+parser.add_argument('-max', '--max_cycle_length', type=int, help='Specify the minimum required number of nodes.', default=15)
 
 args = parser.parse_args()
 
@@ -118,3 +124,7 @@ if os.path.isfile(smask_path):
   os.remove(smask_path)
 
 
+# statistics module
+
+print('\nRunning statistics module')
+analyze_loops(node_path, edge_path, args.min_vessel_length,args.min_cycle_length, args.max_cycle_length)

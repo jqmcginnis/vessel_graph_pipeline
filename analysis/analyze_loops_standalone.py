@@ -2,6 +2,7 @@ import os
 import os.path as osp
 import torch
 import numpy as np
+import scipy
 import pandas as pd
 import argparse
 import os
@@ -9,20 +10,37 @@ import networkx as nx
 import torch_geometric.transforms as T
 from torch_geometric.utils import to_networkx
 from torch_geometric.data import Data
+
 from torch_geometric.utils import remove_isolated_nodes, remove_self_loops
 
-def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max_cycle_length):
+parser = argparse.ArgumentParser(description='display graph features and summary.')
+parser.add_argument('-n','--node_list',help='Path to node list.', required=True)
+parser.add_argument('-e','--edge_list',help='Path to edge list.', required=True)
 
-    df_nodes = pd.read_csv(node_list,sep=';')
-    df_edges = pd.read_csv(edge_list,sep=';')
+parser.add_argument('-l','--min_vessel_length', type=float, default=5.0, help='Minimum vessel length')
+parser.add_argument('-min', '--min_cycle_length',type=int, help='Specify the minimum required number of nodes.', default=3)
+parser.add_argument('-max', '--max_cycle_length', type=int, help='Specify the minimum required number of nodes.', default=15)
 
-    dataset_name = os.path.commonprefix([node_list, edge_list])
+args = parser.parse_args()
+
+def main():
+
+    # Note - we can use the random split for the computation of the closed loops
+    # we are using the whole graph (undirected edges) any way, no reason to compute
+    # spatial masks!
+
+    df_nodes = pd.read_csv(args.node_list,sep=';')
+    df_edges = pd.read_csv(args.edge_list,sep=';')
+
+    dataset_name = os.path.commonprefix([args.node_list, args.edge_list])
 
     data = Data()
+
     data.node_attr_keys = ['pos_x','pos_y','pos_z']
 
     # Node feature matrix with shape [num_nodes, num_node_features]
     data.x = torch.from_numpy(np.array(df_nodes[data.node_attr_keys].to_numpy()))
+
 
     # Node position matrix with shape [num_nodes, num_dimensions]
     data.pos = torch.from_numpy(np.array( df_nodes[['pos_x', 'pos_y', 'pos_z']].to_numpy())) # coordinates
@@ -34,7 +52,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
 
     # filter minimum edge length
     idx_length = data.edge_attr_keys.index("length")
-    indices = np.squeeze(np.argwhere(edge_features[:,idx_length]>=min_vessel_length))
+    indices = np.squeeze(np.argwhere(edge_features[:,idx_length]>=args.min_vessel_length))
 
     edge_features = edge_features[indices]
     edges = edges[indices]
@@ -75,7 +93,10 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
                         node_attrs=["x"],
                         edge_attrs=["edge_attr"],
                         to_undirected=True,
-                        remove_self_loops=False)
+                        remove_self_loops=False)#, node_attrs = data.x,edge_attrs=data.edge_attr_undirected,to_undirected=True, remove_self_loops=False)
+
+    #print(graph.nodes(data=True))
+    #print(graph.edges(data=True))
 
     ## compute closed loops for undirected graphs
     cycles = nx.cycle_basis(graph)
@@ -86,7 +107,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
 
     # toss out the ones we don't want
     for cycle_idx, cycle in enumerate(cycles):
-        if ((len(cycle) >= min_cycle_length) and (len(cycle) <= max_cycle_length)):
+        if ((len(cycle) >= args.min_cycle_length) and (len(cycle) <= args.max_cycle_length)):
             valid_indices.append(cycle)
 
     cycles = valid_indices
@@ -97,7 +118,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
     edge_count = []
 
     for cycle_idx, cycle in enumerate(cycles):
-        if len(cycle) <= max_cycle_length:
+        if len(cycle) <= args.max_cycle_length:
             loop_number.append(cycle_idx)
             edge_count.append(len(cycle))
             # assemble the node list
@@ -113,6 +134,7 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
                 bounding_boxes[cycle_idx, 4] = np.min(local_bounding_box[:, 2])
                 bounding_boxes[cycle_idx, 5] = np.max(local_bounding_box[:, 2])
 
+    cycle_length = []
     vessel_length = []
     vessel_distance = []
 
@@ -147,9 +169,11 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
          'cycle_elements': cycles,
          }
     df = pd.DataFrame(data=d)
-    identifier = f"{dataset_name}_stats_vmin_{min_vessel_length}_cmin_{min_cycle_length}_cmax_{max_cycle_length}.csv"
-    identifier  = identifier.replace('__', '_') 
+    identifier = f"{dataset_name}num_closed_loops_edge_len.csv"
     df.to_csv(identifier) 
+
+if __name__ == "__main__":
+        main()
 
 
 
