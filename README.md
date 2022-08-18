@@ -4,6 +4,8 @@ This prepository hosts source code for an automated voreen-based pipeline coveri
 
 ## Workflow 
 
+Install voreen to your local linux machine, following the installation instructions.
+
 Required input files:
 
 ```
