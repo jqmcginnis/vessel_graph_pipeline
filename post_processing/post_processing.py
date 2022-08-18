@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def post_processing(node_list_path, edge_list_path):
+def post_processing(node_list_path, edge_list_path, processed_node_path, processed_edge_path):
 
 	# read unfiltered edge list
 	df_edges = pd.read_csv(edge_list_path,sep=';')
@@ -159,9 +159,6 @@ def post_processing(node_list_path, edge_list_path):
 
 	df_edges = df_edges.abs()
 
-	edge_path = edge_list_path.split('.csv')[0] + "_processed.csv"
-	node_path = node_list_path.split('.csv')[0] + "_processed.csv"
-
-	df_edges.to_csv(edge_path,index=False,sep=';')
-	df_nodes.to_csv(node_path,index=False,sep=';')
+	df_edges.to_csv(processed_edge_path,index=False,sep=';')
+	df_nodes.to_csv(processed_node_path,index=False,sep=';')
 

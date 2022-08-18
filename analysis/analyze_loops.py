@@ -11,12 +11,10 @@ from torch_geometric.utils import to_networkx
 from torch_geometric.data import Data
 from torch_geometric.utils import remove_isolated_nodes, remove_self_loops
 
-def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max_cycle_length):
+def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max_cycle_length, file_path):
 
     df_nodes = pd.read_csv(node_list,sep=';')
     df_edges = pd.read_csv(edge_list,sep=';')
-
-    dataset_name = os.path.commonprefix([node_list, edge_list])
 
     data = Data()
     data.node_attr_keys = ['pos_x','pos_y','pos_z']
@@ -147,10 +145,8 @@ def analyze_loops(node_list, edge_list, min_vessel_length, min_cycle_length, max
          'cycle_elements': cycles,
          }
     df = pd.DataFrame(data=d)
-    identifier = f"{dataset_name}_stats_vmin_{min_vessel_length}_cmin_{min_cycle_length}_cmax_{max_cycle_length}.csv"
-    identifier  = identifier.replace('__', '_') 
-    identifier  = identifier.replace('.', '_') 
-    df.to_csv(identifier) 
+
+    df.to_csv(file_path) 
 
 
 
