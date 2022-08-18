@@ -55,7 +55,6 @@ if os.path.exists(smask_path):
         gunzip(args.segmentation_mask)
         delete_smask_flag = True
         smask_path = os.path.splitext(args.segmentation_mask)[0]
-        
     elif smask_path.endswith('.nii'):
         print("unzipped version already exists")
         delete_smask_flag = False
@@ -68,10 +67,9 @@ else:
 
 if os.path.exists(args.atlas_mask):
     if amask_path.endswith('nii.gz'):
-        gunzip(args.segmentation_mask)
+        gunzip(args.atlas_mask)
         delete_smask_flag = True
         amask_path = os.path.splitext(args.segmentation_mask)[0]
-        
     elif amask_path.endswith('.nii'):
         print("unzipped version already exists")
         delete_smask_flag = False
