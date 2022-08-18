@@ -60,9 +60,19 @@ Path(workdir).mkdir(parents=True, exist_ok=True)
 Path(tempdir).mkdir(parents=True, exist_ok=True)
 Path(cachedir).mkdir(parents=True, exist_ok=True)
 
-# graph files
-edge_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_edges.csv'
-node_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_nodes.csv'
+# check if file ending is .nii.gz or .nii
+
+if smask_path.endswith('.nii.gz'):
+    # graph files
+    base_name = os.path.basename(smask_path).replace(".nii.gz", "")
+    edge_path = f'{os.path.join(workdir,base_name)}_b_{bulge_size_identifier}_edges.csv'
+    node_path = f'{os.path.join(workdir,base_name)}_b_{bulge_size_identifier}_nodes.csv'
+
+else:
+    # graph files
+    base_name = os.path.basename(smask_path).replace(".nii", "")
+    edge_path = f'{os.path.join(workdir,base_name)}_b_{bulge_size_identifier}_edges.csv'
+    node_path = f'{os.path.join(workdir,base_name)}_b_{bulge_size_identifier}_nodes.csv'
 
 print(f'Segmentation Mask: {smask_path}')
 print(f'Edge List Path: {edge_path}')
