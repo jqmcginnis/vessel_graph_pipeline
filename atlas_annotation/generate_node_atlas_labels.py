@@ -188,10 +188,10 @@ def annotate_atlas(OntologyFilePath,AtlasMask,node_list_path):
     WriteCSV(ElementsList, node_list_path)
         
     ClusteredList = collapseToColorGroup(ElementsList, ontologyDF, excludeRegions=excludeRegionByColorHexList) 
-    ClusteredList.to_csv(node_list_path.replace(".csv", "_AtlasGrouped.csv"), index=False)
+    ClusteredList.to_csv(node_list_path.replace(".csv", "_atlas_grouped.csv"), index=False)
 
-    path_atlas_nodes = node_list_path.replace(".csv", "_Atlas.csv")
-    path_atlas_groups = node_list_path.replace(".csv", "_AtlasGrouped.csv")
+    path_atlas_nodes = node_list_path.replace(".csv", "_atlas.csv")
+    path_atlas_groups = node_list_path.replace(".csv", "_atlas_grouped.csv")
     path_atlas_encoded = node_list_path.replace(".csv", "_atlas_processed.csv")
 
     df_atlas_groups = pd.read_csv(path_atlas_groups, sep=',', usecols=['GroupAcronym', 'GroupedAcronyms'])
