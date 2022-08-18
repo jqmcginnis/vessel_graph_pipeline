@@ -1,4 +1,4 @@
-# VesselGraph Generation and Statistics
+# VesselGraph Pipeline
 
 This prepository hosts source code for an automated voreen-based pipeline covering graph generation, post processing, atlas annotation and statistical analysis. 
 
