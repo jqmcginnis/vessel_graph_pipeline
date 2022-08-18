@@ -16,13 +16,14 @@ def gunzip(file):
 # import custom modules
 from post_processing.post_processing import post_processing
 from analysis.analyze_loops import analyze_loops
+from atlas_annotation.generate_node_atlas_labels import *
 
 
 parser = argparse.ArgumentParser(description='Control script for running the complete vessel pipeline.')
 
 # general settings and input files
 parser.add_argument('-s','--segmentation_mask', help='Path of zipped segmentation mask of the whole brain.', type=str, default = 'segmentation.nii.gz', required=True)
-parser.add_argument('-a','--atlas_mask', help='Path of zipped atlas mask of the whole brain.', type=str, default= 'atlas.nii.gz')
+
 parser.add_argument('-b','--bulge_size', help='Specify bulge size', type=float, required=True)
 
 # voreen command line tool options
@@ -30,6 +31,9 @@ parser.add_argument('-vp','--voreen_tool_path',help="Specify the path where vore
 parser.add_argument('-wd','--workdir', help='Specify the working directory.', required=True)
 parser.add_argument('-td','--tempdir', help='Specify the temporary data directory.', required=True)
 parser.add_argument('-cd','--cachedir',help='Specify the cache directory.', required=True)
+
+# atlas annotation
+parser.add_argument('-a','--atlas_mask', help='Path of zipped atlas mask of the whole brain.', type=str, default= 'atlas.nii.gz')
 
 # statistics
 parser.add_argument('-l','--min_vessel_length', type=float, default=5.0, help='Minimum vessel length')
@@ -113,18 +117,28 @@ os.system(f'cd {voreen_tool_path} ; ./voreentool \
 ')
 '''
 # post-processing module
-
+'''
 print('\nRunning post processing module')
 post_processing(node_path, edge_path)
 
+
+'''
+# atlas label module
+
+print('\nRunning atlas label module')
+onthology_file_path = os.path.join('atlas_annotation', 'AllenMouseCCFv3_ontology_22Feb2021.xml')
+annotate_atlas(onthology_file_path, amask_path, node_path)
+
+# statistics module
+'''
+print('\nRunning statistics module')
+analyze_loops(node_path, edge_path, args.min_vessel_length,args.min_cycle_length, args.max_cycle_length)
+'''
+
+'''
 if os.path.isfile(amask_path):
   os.remove(amask_path)
 
 if os.path.isfile(smask_path):
   os.remove(smask_path)
-
-
-# statistics module
-
-print('\nRunning statistics module')
-analyze_loops(node_path, edge_path, args.min_vessel_length,args.min_cycle_length, args.max_cycle_length)
+'''

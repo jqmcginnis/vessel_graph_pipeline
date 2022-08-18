@@ -11,13 +11,21 @@ BL6J-3mo-4-iso3um_probs_bin0p45.nii.gz (segmentation mask)
 BL6J-3mo-4-iso3um_probs_bin0p45_regions.nii.gz (atlas annotation mask)
 ```
 
-Steps:
+Pipeline Steps:
 
 1. unzip the NIFTI files
 2. run voreen on the segmentation mask
 3. post-process voreen results
 4. annotate post-processed graph to regions
 5. compute statistics
+6. remove unzipped NIFTI files
+
+Run Pipeline:
+
+```
+python3 run.py -b 3.0 -vp /home/home/johannes_julian/voreen/binaries/voreen-src-unix-nightly/bin -wd wd -cd cache -td temp --segmentation_mask BL6J-12mo-10_iso3um_probs_bin0p49.nii.gz --atlas_mask BL6J-12mo-10_iso3um_probs_bin0p49_regions.nii.gz
+```
+
 
 Output:
 
@@ -37,6 +45,10 @@ BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_um_closed_loops_edge_len.csv (statistics w
 
 - Provides methods for computing the number of closed loops.
 - Provides methods for computing the average distance to bifurcations.
+
+## Atlas Annotation
+
+Annotation to Alan Mouse Brain Atlas.
 
 ## Graph Generation 
 
