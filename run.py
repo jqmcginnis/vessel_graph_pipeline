@@ -28,9 +28,9 @@ parser.add_argument('-b','--bulge_size', help='Specify bulge size', type=float, 
 
 # voreen command line tool options
 parser.add_argument('-vp','--voreen_tool_path',help="Specify the path where voreentool is located.", required=True)
-parser.add_argument('-wd','--workdir', help='Specify the working directory.', required=True)
-parser.add_argument('-td','--tempdir', help='Specify the temporary data directory.', required=True)
-parser.add_argument('-cd','--cachedir',help='Specify the cache directory.', required=True)
+parser.add_argument('-wd','--workdir', help='Specify the working directory.', default='.')
+parser.add_argument('-td','--tempdir', help='Specify the temporary data directory.', default='.')
+parser.add_argument('-cd','--cachedir',help='Specify the cache directory.', default='.')
 
 # atlas annotation
 parser.add_argument('-a','--atlas_mask', help='Path of zipped atlas mask of the whole brain.', type=str, default= 'atlas.nii.gz')
@@ -81,11 +81,11 @@ if os.path.exists(args.atlas_mask):
         print("no atlas provided.")
 
 bulge_size = args.bulge_size
-voreen_tool_path = args.voreen_tool_path
+voreen_tool_path = os.path.abspath(args.voreen_tool_path)
 
-workdir = args.workdir
-tempdir = args.tempdir
-cachedir = args.cachedir
+workdir = os.path.abspath(args.workdir)
+tempdir = os.path.abspath(args.tempdir)
+cachedir = os.path.abspath(args.cachedir)
 
 Path(workdir).mkdir(parents=True, exist_ok=True)
 Path(tempdir).mkdir(parents=True, exist_ok=True)
@@ -95,12 +95,14 @@ bulge_size_identifier = f'{bulge_size}'
 bulge_size_identifier = bulge_size_identifier.replace('.','_')
 edge_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_edges.csv'
 node_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_nodes.csv'
-graph_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_graph.vvg.gz'
+
+# currently not supported
+# graph_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_graph.vvg.gz'
+# print(f'Graph Path: {graph_path}')
 
 print(f'Segmentation Mask: {smask_path}')
 print(f'Edge List Path: {edge_path}')
 print(f'Node List Path: {node_path}')
-print(f'Graph Path: {graph_path}')
 
 # graph generation
 
@@ -178,9 +180,10 @@ else:
 
 # statistics
 dataset_name = os.path.commonprefix([processed_node_path, processed_edge_path])
-identifier = f"{dataset_name}_stats_vmin_{args.min_vessel_length}_cmin_{args.min_cycle_length}_cmax_{args.max_cycle_length}.csv"
-identifier  = identifier.replace('__', '_') 
-identifier  = identifier.replace('.', '_') 
+identifier = f"{dataset_name}_stats_vmin_{args.min_vessel_length}_cmin_{args.min_cycle_length}_cmax_{args.max_cycle_length}"
+identifier = identifier.replace('__', '_')
+identifier = identifier.replace('.', '_') # in float numbers 
+identifier = f'{identifier}.csv'
 
 if os.path.exists(identifier):
     print("skipping stats module")
