@@ -127,8 +127,8 @@ def ReadUnformattedCSV(FPath):
             ElementsList.append(tmp)
     return ElementsList
 
-def WriteCSV(ElementsList, node_list_path):
-    with open(node_list_path.replace(".csv", "_Atlas.csv"), newline='', encoding='utf-8', mode='w') as csv_file:
+def WriteCSV(ElementsList, path_atlas_nodes):
+    with open(path_atlas_nodes, newline='', encoding='utf-8', mode='w') as csv_file:
         fieldnames = ['id', 'pos_x', 'pos_y', 'pos_z', 'degree', 'isAtSampleBorder', 'Blob_NumOfVoxels','Blob_AtlasLabel','Region_ColorHex','Region_Acronym']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
