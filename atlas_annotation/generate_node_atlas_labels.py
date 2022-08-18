@@ -12,6 +12,7 @@ import pandas as pd
 import datetime
 from xml.etree import ElementTree as ET
 import io
+from tqdm import tqdm
 
 columnNames=['Label', 'VoxelSum', 'RegionSum']
 excludeRegionByColorHexList=['000000', 'FFFFFF', 'BFDAE3', 'B0F0FF', 'B0FFB8', '70FF70', '70FF71', '82C7AE', '4BB547', '58BA48', '56B84B', '33B932', 'ECE754', '7F2E7E']
@@ -114,12 +115,11 @@ def ReadUnformattedCSV(FPath):
     with open(FPath, mode='r') as csv_file:
         csv_reader = csv.DictReader(csv_file,delimiter=";")
         line_count = 0
-        for row in csv_reader:
+        for row in tqdm(csv_reader):
             if line_count == 0:
                 print(f'Column names in the CSV are {", ".join(row)}')
             line_count += 1
-            print("Keys:",list(row.keys()))
-            
+           
             voxels_no = 1
             tmp={"id"          : int(row["id"]),
                   "pos_y" : int(float(row["pos_y"])),
@@ -141,8 +141,7 @@ def WriteCSV(ElementsList):
 
 
 def AddAtlasLabels(ElementsList, ontologyDF, LabelImage):
-    for element in ElementsList:
-        print("Processing ID " + str(element["id"]))
+    for element in tqdm(ElementsList):
         LabelOfElement =  LabelImage[element["pos_x"], element["pos_y"], element["pos_z"]]
         element.update({"Blob_AtlasLabel":LabelOfElement})
         if np.abs(LabelOfElement) in ontologyDF["id"]:
