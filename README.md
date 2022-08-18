@@ -46,7 +46,6 @@ BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_um_closed_loops_edge_len.csv (statistics w
 ## Analysis
 
 - Provides methods for computing the number of closed loops.
-- Provides methods for computing the average distance to bifurcations.
 
 ## Atlas Annotation
 
@@ -66,7 +65,7 @@ Jupyter Notebooks for visualization processes.
 
 ## Visualization Scripts
 
-Provides visualization scripts in order to render graph as vtk.
+Provides visualization scripts in order to render graph as vtk graphs.
 
 ## Citation
 
