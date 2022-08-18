@@ -18,10 +18,6 @@ columnNames=['Label', 'VoxelSum', 'RegionSum']
 excludeRegionByColorHexList=['000000', 'FFFFFF', 'BFDAE3', 'B0F0FF', 'B0FFB8', '70FF70', '70FF71', '82C7AE', '4BB547', '58BA48', '56B84B', '33B932', 'ECE754', '7F2E7E']
 VoxelCorrectionFactor = 1.625 * 1.625 * 3
 
-OntologyFilePath = "AllenMouseCCFv3_ontology_22Feb2021.xml"
-AtlasMask = "BALBC-no1_iso3um_stitched_atlas_registration_result.nii.gz"
-node_list_path      = "BALBc-no1_iso3um_graph_nodes.csv"
-
 def parseOntologyXML(ontologyInput=None):
     
     if ontologyInput == None: raise Exception("An Allen CCF ontology XML file must be provided.")
@@ -131,7 +127,7 @@ def ReadUnformattedCSV(FPath):
             ElementsList.append(tmp)
     return ElementsList
 
-def WriteCSV(ElementsList):
+def WriteCSV(ElementsList, node_list_path):
     with open(node_list_path.replace(".csv", "_Atlas.csv"), newline='', encoding='utf-8', mode='w') as csv_file:
         fieldnames = ['id', 'pos_x', 'pos_y', 'pos_z', 'degree', 'isAtSampleBorder', 'Blob_NumOfVoxels','Blob_AtlasLabel','Region_ColorHex','Region_Acronym']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -189,7 +185,7 @@ def annotate_atlas(OntologyFilePath,AtlasMask,node_list_path):
     
     ElementsList = ReadUnformattedCSV(node_list_path)
     ElementsList = AddAtlasLabels(ElementsList, ontologyDF, LabelImage)
-    WriteCSV(ElementsList)
+    WriteCSV(ElementsList, node_list_path)
         
     ClusteredList = collapseToColorGroup(ElementsList, ontologyDF, excludeRegions=excludeRegionByColorHexList) 
     ClusteredList.to_csv(node_list_path.replace(".csv", "_AtlasGrouped.csv"), index=False)
