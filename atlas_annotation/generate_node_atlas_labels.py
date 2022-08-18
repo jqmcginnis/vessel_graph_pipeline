@@ -185,7 +185,7 @@ def annotate_atlas(OntologyFilePath,AtlasMask,node_list_path, path_atlas_nodes, 
     
     ElementsList = ReadUnformattedCSV(node_list_path)
     ElementsList = AddAtlasLabels(ElementsList, ontologyDF, LabelImage)
-    WriteCSV(ElementsList, node_list_path)
+    WriteCSV(ElementsList, path_atlas_nodes)
         
     ClusteredList = collapseToColorGroup(ElementsList, ontologyDF, excludeRegions=excludeRegionByColorHexList) 
     ClusteredList.to_csv(path_atlas_groups, index=False)
