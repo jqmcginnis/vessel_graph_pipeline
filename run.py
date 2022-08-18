@@ -43,40 +43,15 @@ parser.add_argument('-max', '--max_cycle_length', type=int, help='Specify the mi
 args = parser.parse_args()
 
 # check if we are dealing with nii.gz or .nii
+
 smask_path = os.path.abspath(args.segmentation_mask)
 amask_path = os.path.abspath(args.atlas_mask)
 
-if os.path.exists(smask_path):
-    if smask_path.endswith('nii.gz'):
-        if os.path.exists(os.path.splitext(smask_path)[0]):
-            print("unzipped version already exists")
-        else:
-            gunzip(smask_path)
-        smask_path = os.path.splitext(smask_path)[0]
-    elif smask_path.endswith('.nii'):
-        print("unzipped version already exists")
-    else:
-        sys.exit(f'Segmentation Mask not supported.')
-else:
-        sys.exit(f'Segmentation Mask not found.')
-
-if os.path.exists(amask_path):
-    if amask_path.endswith('nii.gz'):
-        if os.path.exists(os.path.splitext(amask_path)[0]):
-            print("unzipped version already exists")
-        else:
-            gunzip(amask_path)
-        amask_path = os.path.splitext(amask_path)[0]
-    elif amask_path.endswith('.nii'):
-        print("unzipped version already exists")
-    else:
-        sys.exit(f'Atlas Mask not supported.')
-else:
-        print("No atlas mask provided.")
-
 bulge_size = args.bulge_size
-voreen_tool_path = os.path.abspath(args.voreen_tool_path)
+bulge_size_identifier = f'{bulge_size}'
+bulge_size_identifier = bulge_size_identifier.replace('.','_')
 
+# directories
 workdir = os.path.abspath(args.workdir)
 tempdir = os.path.abspath(args.tempdir)
 cachedir = os.path.abspath(args.cachedir)
@@ -85,8 +60,7 @@ Path(workdir).mkdir(parents=True, exist_ok=True)
 Path(tempdir).mkdir(parents=True, exist_ok=True)
 Path(cachedir).mkdir(parents=True, exist_ok=True)
 
-bulge_size_identifier = f'{bulge_size}'
-bulge_size_identifier = bulge_size_identifier.replace('.','_')
+# graph files
 edge_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_edges.csv'
 node_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_nodes.csv'
 
@@ -100,8 +74,25 @@ if os.path.exists(edge_path) and os.path.exists(node_path):
     print("skipping graph generation")
 
 else:
+
+    if os.path.exists(smask_path):
+        if smask_path.endswith('nii.gz'):
+            if os.path.exists(os.path.splitext(smask_path)[0]):
+                print("unzipped version already exists")
+            else:
+                gunzip(smask_path)
+            smask_path = os.path.splitext(smask_path)[0]
+        elif smask_path.endswith('.nii'):
+            print("unzipped version already exists")
+        else:
+            sys.exit(f'Segmentation Mask not supported.')
+    else:
+        sys.exit(f'Segmentation Mask not found.')
     
     bulge_path = f'<Property mapKey="minBulgeSize" name="minBulgeSize" value="{bulge_size}"/>'
+
+    voreen_tool_path = os.path.abspath(args.voreen_tool_path)
+
 
     # create temp directory
     temp_directory = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
@@ -160,6 +151,18 @@ if os.path.exists(args.atlas_mask):
         print("skipping atlas annotation")
 
     else:
+
+        if os.path.exists(amask_path):
+            if amask_path.endswith('nii.gz'):
+                if os.path.exists(os.path.splitext(amask_path)[0]):
+                    print("unzipped version already exists")
+                else:
+                    gunzip(amask_path)
+                amask_path = os.path.splitext(amask_path)[0]
+            elif amask_path.endswith('.nii'):
+                print("unzipped version already exists")
+            else:
+                sys.exit(f'Atlas Mask not supported.')
 
         print('\nRunning atlas label module')
         onthology_file_path = os.path.join('atlas_annotation', 'AllenMouseCCFv3_ontology_22Feb2021.xml')
