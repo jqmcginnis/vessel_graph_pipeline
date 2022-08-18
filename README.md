@@ -2,6 +2,37 @@
 
 This prepository hosts all source code and utility scripts for the generation of statistical evaluation of the VesselGraph.
 
+## Workflow 
+
+Required input files:
+
+```
+BL6J-3mo-4-iso3um_probs_bin0p45.nii.gz (segmentation mask)
+BL6J-3mo-4-iso3um_probs_bin0p45_regions.nii.gz (atlas annotation mask)
+```
+
+Steps:
+
+1. unzip the NIFTI files
+2. run voreen on the segmentation mask
+3. post-process voreen results
+4. annotate post-processed graph to regions
+5. compute statistics
+
+Output:
+
+```
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_nodes.csv (raw graph nodes voreen)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_edges.csv (raw graph edges voreen)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_nodes_processed.csv (post-processed graph nodes voreen)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_edges_processed.csv (post-processed graph edges voreen)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_nodes_processed_Atlas.csv (post-processed, Atlas-annotated node list)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_nodes_processed_AtlasGrouped.csv (post-processed, reduced Atlas-annotated node list)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_nodes_processed_AtlasGrouped.csv (post-processed, reduced Atlas-annotated node list)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_nodes_processed_AtlasGrouped.csv (post-processed, reduced Atlas-annotated node list)
+BL6J-3mo-4-iso3um_probs_bin0p45_b_3_0_um_closed_loops_edge_len.csv (statistics w.r.t. closed loops and edge length)
+```
+
 ## Analysis
 
 - Provides methods for computing the number of closed loops.
