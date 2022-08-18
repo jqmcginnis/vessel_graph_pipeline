@@ -155,20 +155,26 @@ if os.path.exists(processed_edge_path) and os.path.exists(processed_node_path):
 else:
     post_processing(node_path, edge_path, processed_node_path, processed_edge_path)
 
+# only run atlas annotation if atlas mask provided
 
-path_atlas_nodes = processed_node_path.replace(".csv", "_atlas.csv")
-path_atlas_groups = processed_node_path.replace(".csv", "_atlas_grouped.csv")
-path_atlas_encoded = processed_node_path.replace(".csv", "_atlas_encoded.csv")
+if os.path.exists(args.atlas_mask):
 
-# atlas labelling
-if os.path.exists(path_atlas_nodes) and os.path.exists(path_atlas_groups) and os.path.exists(path_atlas_encoded):
-    print("skipping atlas annotation")
+    path_atlas_nodes = processed_node_path.replace(".csv", "_atlas.csv")
+    path_atlas_groups = processed_node_path.replace(".csv", "_atlas_grouped.csv")
+    path_atlas_encoded = processed_node_path.replace(".csv", "_atlas_encoded.csv")
+
+    # atlas labelling
+    if os.path.exists(path_atlas_nodes) and os.path.exists(path_atlas_groups) and os.path.exists(path_atlas_encoded):
+        print("skipping atlas annotation")
+
+    else:
+
+        print('\nRunning atlas label module')
+        onthology_file_path = os.path.join('atlas_annotation', 'AllenMouseCCFv3_ontology_22Feb2021.xml')
+        annotate_atlas(onthology_file_path, amask_path, node_path, path_atlas_nodes, path_atlas_groups, path_atlas_encoded)
 
 else:
-
-    print('\nRunning atlas label module')
-    onthology_file_path = os.path.join('atlas_annotation', 'AllenMouseCCFv3_ontology_22Feb2021.xml')
-    annotate_atlas(onthology_file_path, amask_path, node_path, path_atlas_nodes, path_atlas_groups, path_atlas_encoded)
+    print("No atlas provided, skipping atlas annotation.")
 
 # statistics
 dataset_name = os.path.commonprefix([processed_node_path, processed_edge_path])
