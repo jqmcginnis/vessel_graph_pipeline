@@ -3,6 +3,17 @@ import os
 import datetime
 import pathlib
 from shutil import copyfile
+import gzip
+import shutil
+
+def gunzip(file):
+    with gzip.open(file, 'rb') as f_in:
+        with open(os.path.splitext(file)[0], 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+# import custom modules
+from post_processing import post_processing
+# from analysis import 
 
 parser = argparse.ArgumentParser(description='Control script for running the complete vessel pipeline.')
 
@@ -19,53 +30,59 @@ parser.add_argument('-cd','--cachedir',help='Specify the cache directory.', requ
 
 args = parser.parse_args()
 
-input_image_path = args.segmentation_mask
+# unzip files using gzip
+
+if not args.segmentation_mask:
+    gunzip(args.segmentation_mask)
+    
+if not args.atlas_mask:
+    gunzip(args.atlas_mask)
+
+
+smask_path = args.segmentation_mask.replace('.','_')
+amask_path = args.atlas_mask.replace('.','_')
 bulge_size = args.bulge_size
 
+voreen_tool_path = args.voreen_tool_path
 workdir = args.workdir
 tempdir = args.tempdir
 cachedir = args.cachedir
 
-voreen_tool_path = args.voreen_tool_path
-workspace_path = 'vesselgraph_workspace.vws'
-
-volume_path = input_image_path
 bulge_size_identifier = f'{bulge_size}'
 bulge_size_identifier = bulge_size_identifier.replace('.','_')
-edge_path = f'{os.path.join(workdir,os.path.splitext(input_image_path)[0])}_b_{bulge_size_identifier}_edges.csv'
-node_path = f'{os.path.join(workdir,os.path.splitext(input_image_path)[0])}_b_{bulge_size_identifier}_nodes.csv'
-graph_path = f'{os.path.join(workdir,os.path.splitext(input_image_path)[0])}_b_{bulge_size_identifier}_graph.vvg.gz'
+edge_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_edges.csv'
+node_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_nodes.csv'
+graph_path = f'{os.path.join(workdir,os.path.splitext(smask_path)[0])}_b_{bulge_size_identifier}_graph.vvg.gz'
 
-print(f'{volume_path}')
-print(f'{edge_path}')
-print(f'{node_path}')
-print(f'{graph_path}')
+print(f'Segmentation Mask: {smask_path}')
+print(f'Edge List Path: {edge_path}')
+print(f'Node List Path: {node_path}')
+print(f'Graph Path: {graph_path}')
 
 bulge_path = f'<Property mapKey="minBulgeSize" name="minBulgeSize" value="{bulge_size}"/>'
 
 # create temp directory
-
 temp_directory = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
 pathlib.Path(temp_directory).mkdir(parents=True, exist_ok=True)
 
-voreen_workspace = 'vesselgraph_workspace.vws'
-copyfile(workspace_path,os.path.join(temp_directory,voreen_workspace))
+workspace_path = 'vesselgraph_workspace.vws'
+copyfile(workspace_path,os.path.join(temp_directory,workspace_path))
 
 # Read in the file
-with open(os.path.join(temp_directory,voreen_workspace), 'r') as file :
+with open(os.path.join(temp_directory,workspace_path), 'r') as file :
     filedata = file.read()
 
-# Replace the target string
-filedata = filedata.replace("/home/voreen_data/volume.nii", volume_path)
+# Replace the target strings
+filedata = filedata.replace("/home/voreen_data/volume.nii", smask_path)
 filedata = filedata.replace("/home/voreen_data/nodes.csv", node_path)
 filedata = filedata.replace("/home/voreen_data/edges.csv", edge_path)
 filedata = filedata.replace('<Property mapKey="minBulgeSize" name="minBulgeSize" value="3" />', bulge_path)
 
-# Write the file out again
-with open(os.path.join(temp_directory,voreen_workspace), 'w') as file:
+# Write out workspace file to temp dir
+with open(os.path.join(temp_directory,workspace_path), 'w') as file:
     file.write(filedata)
 
-workspace_path = os.path.join(os.path.join(os. getcwd(),temp_directory),voreen_workspace)
+workspace_path = os.path.join(os.path.join(os. getcwd(),temp_directory),workspace_path)
 print(workspace_path)
 
 absolute_temp_path = os.path.join(os.getcwd(),temp_directory)
@@ -79,4 +96,6 @@ os.system(f'cd {voreen_tool_path} ; ./voreentool \
 ; rm -r {absolute_temp_path}\
 ')
 
+# post-processing module
+post_processing(node_path, edge_path)
 
