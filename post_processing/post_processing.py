@@ -5,7 +5,7 @@ import numpy as np
 def post_processing(node_list_path, edge_list_path):
 
 	# read unfiltered edge list
-	df_edges = pd.read_csv(edge_list,sep=';')
+	df_edges = pd.read_csv(edge_list_path,sep=';')
 
 	# obtain copy of the node1id and node2ids
 	edges = np.column_stack((np.array(df_edges[['node1id']]),np.array(df_edges[['node2id']])))
@@ -87,7 +87,7 @@ def post_processing(node_list_path, edge_list_path):
 			curveness += df_edges.iloc[index + k]['curveness']
 			avgCrossSection += df_edges.iloc[index + k]['avgCrossSection']
 			avgRadiusAvg += df_edges.iloc[index + k]['avgRadiusAvg']
-		
+
 		df_edges.at[index, 'length']= length / cnt # mean
 		df_edges.at[index, 'volume'] = volume  # add
 		df_edges.at[index, 'num_voxels'] = num_voxels # add
@@ -139,7 +139,7 @@ def post_processing(node_list_path, edge_list_path):
 	ii = np.nonzero(y)[0]
 	node_cnt = np.vstack((ii,y[ii])).T
 
-	df_nodes= pd.read_csv(node_list,sep=';')
+	df_nodes= pd.read_csv(node_list_path,sep=';')
 
 	node_degree = np.zeros((len(df_nodes.index)))
 	node_degree[node_cnt[:,0]] = node_cnt[:,1] # contains isolated nodes!
@@ -159,8 +159,8 @@ def post_processing(node_list_path, edge_list_path):
 
 	df_edges = df_edges.abs()
 
-	edge_path = edge_list.split('.csv')[0] + "_processed.csv"
-	node_path = node_list.split('.csv')[0] + "_processed.csv"
+	edge_path = edge_list_path.split('.csv')[0] + "_processed.csv"
+	node_path = node_list_path.split('.csv')[0] + "_processed.csv"
 
 	df_edges.to_csv(edge_path,index=False,sep=';')
 	df_nodes.to_csv(node_path,index=False,sep=';')

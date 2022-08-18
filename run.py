@@ -98,15 +98,17 @@ print(workspace_path)
 absolute_temp_path = os.path.join(os.getcwd(),temp_directory)
 
 # extract graph and delete temp directory
-
+'''
 os.system(f'cd {voreen_tool_path} ; ./voreentool \
 --workspace {workspace_path} \
 -platform minimal --trigger-volumesaves --trigger-geometrysaves  --trigger-imagesaves \
 --workdir {workdir} --tempdir {tempdir} --cachedir {cachedir} \
 ; rm -r {absolute_temp_path}\
 ')
-
+'''
 # post-processing module
+
+print('\nRunning post processing module')
 post_processing(node_path, edge_path)
 
 if os.path.isfile(amask_path):
