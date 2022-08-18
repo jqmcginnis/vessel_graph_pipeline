@@ -13,6 +13,6 @@ For the graph generation and post-processing process, pleasse refer to [Voreen G
 
 ## Visualization
 
-Jupyter NOtebooks for visualization processes.
+Jupyter Notebooks for visualization processes.
 
 ## Citation
