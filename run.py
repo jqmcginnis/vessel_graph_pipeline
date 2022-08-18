@@ -23,8 +23,7 @@ parser = argparse.ArgumentParser(description='Control script for running the com
 
 # general settings and input files
 parser.add_argument('-s','--segmentation_mask', help='Path of zipped segmentation mask of the whole brain.', type=str, default = 'segmentation.nii.gz', required=True)
-
-parser.add_argument('-b','--bulge_size', help='Specify bulge size', type=float, required=True)
+parser.add_argument('-b','--bulge_size', help='Specify bulge size', type=float, default=3.0)
 
 # voreen command line tool options
 parser.add_argument('-vp','--voreen_tool_path',help="Specify the path where voreentool is located.", required=True)
